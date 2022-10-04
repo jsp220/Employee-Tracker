@@ -71,6 +71,27 @@ function mainMenu () {
         })
 }
 
+function viewDepts() {
+    db.query('SELECT * FROM department ORDER BY id', (err, results) => {
+        console.table(results);
+        mainMenu();
+    });        
+}
+
+function viewRoles() {
+    db.query(`
+        SELECT r.id, r.title, d.name AS department, r.salary
+        FROM role AS r
+            JOIN
+            department AS d
+            ON r.department_id = d.id
+            ORDER BY r.id`, 
+        (err, results) => {
+            console.table(results);
+            mainMenu();
+    });
+}
+
 function viewEmployees() {
     db.query(`
         SELECT 
@@ -87,40 +108,12 @@ function viewEmployees() {
             ON e.role_id = r.id
             JOIN
             department AS d
-            ON r.department_id = d.id`, 
-        (err, results) => {
-            console.table(results);
-            mainMenu();
-    });
-    
-}
-function addEmployee() {
-    return;
-}
-function updateRole() {
-    return;
-}
-function viewRoles() {
-    db.query(`
-        SELECT r.id, r.title, d.name AS department, r.salary
-        FROM role AS r
-            JOIN
-            department AS d
             ON r.department_id = d.id
-            ORDER BY r.id`, 
+        ORDER BY e.id`, 
         (err, results) => {
             console.table(results);
             mainMenu();
     });
-}
-function addRole() {
-    return;
-}
-function viewDepts() {
-    db.query('SELECT * FROM department ORDER BY id', (err, results) => {
-        console.table(results);
-        mainMenu();
-    });        
 }
 
 function addDept() {
@@ -141,6 +134,124 @@ function addDept() {
             }
         })
     })
+}
+
+function addRole() {  
+    db.query('SELECT * FROM department ORDER BY id', (err, results) => {
+        let depts = [];
+        for (let i in results) {
+            depts.push(results[i].name);
+        }
+        // console.log(results);
+        inquirer.prompt ([
+            {
+                type: "input",
+                message: "Please enter the name of the role you wish to add.",
+                name: "title"
+            },
+            {
+                type: "input",
+                message: "Please enter the salary for this role.",
+                name: "salary",
+            },
+            {
+                type: "list",
+                message: "Which department does the role belong to?",
+                name: "dept",
+                choices: depts
+            }
+        ]).then(data => {
+            let id;
+            for (let i in results) {
+                if (results[i].name == data.dept) id = results[i].id;
+            }
+            // console.log(id);
+            db.query(`
+                INSERT INTO role (title, salary, department_id)
+                VALUES ("${data.title}", ${data.salary}, ${id});`, (err, results) => {
+                    if (err) {
+                        console.error(err);
+                        mainMenu();
+                    } else {
+                    console.log(`Added ${data.title} to the database.`);
+                    mainMenu();
+                    }
+                }
+            )
+        });
+    })
+}
+
+function addEmployee() {
+    db.query('SELECT * FROM role ORDER BY id', (err, roleData) => {
+        let roles = [];
+        for (let i in roleData) {
+            roles.push(roleData[i].title);
+        }
+        // console.log(roles);
+
+        db.query(`SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY id`, (err, empData) => {
+            // console.log(data);
+            let employees = [];
+            for (let i in empData) {
+                employees.push(empData[i].name);
+            }
+            // console.log(employees);
+
+            inquirer.prompt ([
+                {
+                    type: "input",
+                    message: "Please enter the first name of the employee you wish to add.",
+                    name: "firstName"
+                },
+                {
+                    type: "input",
+                    message: "Please enter the last name of the employee you wish to add.",
+                    name: "lastName",
+                },
+                {
+                    type: "list",
+                    message: "What is the employee's role?",
+                    name: "title",
+                    choices: roles
+                },
+                {
+                    type: "list",
+                    message: "Who is the employee's manager?",
+                    name: "mgr",
+                    choices: ["None", ...employees ]
+                },
+            ]).then(data => {
+                let roleId;
+                for (let i in roleData) {
+                    if (roleData[i].title == data.title) roleId = roleData[i].id;
+                }
+                console.log(roleId);
+                let mgrId;
+                if (data.mgr != "None") {
+                    for (let i in empData) {
+                        if (empData[i].name == data.mgr) mgrId = empData[i].id;
+                    }
+                } else mgrId = null;
+
+                db.query(`
+                    INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                    VALUES ("${data.firstName}", "${data.lastName}", ${roleId}, ${mgrId});`, (err, results) => {
+                        if (err) {
+                            console.error(err);
+                            mainMenu();
+                        } else {
+                        console.log(`Added ${data.firstName} ${data.lastName} to the database.`);
+                        mainMenu();
+                        }
+                })
+            })
+        })
+    })
+}
+
+function updateRole() {
+    return;
 }
 
 init(); 
