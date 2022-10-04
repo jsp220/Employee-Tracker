@@ -93,26 +93,104 @@ function viewRoles() {
 }
 
 function viewEmployees() {
+    inquirer.prompt ([
+        {
+            type: "list",
+            message: "How would you like to view all employees?",
+            name: "empView",
+            choices: 
+                [
+                    "View All Employees Individually",
+                    "View All Employees by Manager",
+                    "View All Employees by Department",
+                ]
+        }
+    ]).then(data => {
+        switch(data.empView) {
+            case "View All Employees Individually":
+                viewIndEmp();
+                break;
+            case "View All Employees by Manager":
+                viewByMgr();
+                break;
+            case "View All Employees by Department":
+                viewByDept();
+                break;
+            default:
+                closeApp();
+                break;
+        }
+    })
+    
+}
+
+function viewIndEmp() {
     db.query(`
-        SELECT 
-            e.id, e.first_name, 
-            e.last_name, r.title, 
-            d.name AS department, r.salary, 
-            CONCAT(m.first_name, ' ', m.last_name) AS manager
-        FROM employee AS e
-            LEFT JOIN 
-            employee AS m
-            ON e.manager_id = m.id
-            JOIN 
-            role AS r
-            ON e.role_id = r.id
-            JOIN
-            department AS d
-            ON r.department_id = d.id
-        ORDER BY e.id`, 
-        (err, results) => {
-            console.table(results);
-            mainMenu();
+    SELECT 
+        e.id, e.first_name, 
+        e.last_name, r.title, 
+        d.name AS department, r.salary, 
+        CONCAT(m.first_name, ' ', m.last_name) AS manager
+    FROM employee AS e
+        LEFT JOIN 
+        employee AS m
+        ON e.manager_id = m.id
+        JOIN 
+        role AS r
+        ON e.role_id = r.id
+        JOIN
+        department AS d
+        ON r.department_id = d.id
+    ORDER BY e.id`, 
+    (err, results) => {
+        console.table(results);
+        mainMenu();
+    });
+}
+
+function viewByMgr() {
+    db.query(`
+    SELECT 
+        CONCAT(m.first_name, ' ', m.last_name) AS manager,    
+        e.first_name, e.last_name, r.title, 
+        d.name AS department, r.salary
+    FROM employee AS e
+        LEFT JOIN 
+        employee AS m
+        ON e.manager_id = m.id
+        JOIN 
+        role AS r
+        ON e.role_id = r.id
+        JOIN
+        department AS d
+        ON r.department_id = d.id
+    ORDER BY manager`, 
+    (err, results) => {
+        console.table(results);
+        mainMenu();
+    });
+}
+
+function viewByDept() {
+    db.query(`
+    SELECT 
+        d.name AS department,    
+        e.first_name, e.last_name, r.title, 
+        r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
+    FROM employee AS e
+        LEFT JOIN 
+        employee AS m
+        ON e.manager_id = m.id
+        JOIN 
+        role AS r
+        ON e.role_id = r.id
+        JOIN
+        department AS d
+        ON r.department_id = d.id
+    ORDER BY department`, 
+    (err, results) => {
+        console.table(results);
+        mainMenu();
     });
 }
 
