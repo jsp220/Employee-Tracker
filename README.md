@@ -21,32 +21,24 @@ node index.js
 ```
 
 ![Screenshot](assets/images/screenshot01.png)
-
 ![Screenshot](assets/images/screenshot02.png)
 
 To view all departments, roles, or employees, select "View" and follow the prompts:
 
 ![Screenshot](assets/images/screenshot03.png)
-
 ![Screenshot](assets/images/screenshot04.png)
-
 ![Screenshot](assets/images/screenshot05.png)
 
 To add a department, role, or employee, select "Add" and follow the prompts:
 
 ![Screenshot](assets/images/screenshot06.png)
-
 ![Screenshot](assets/images/screenshot07.png)
-
 ![Screenshot](assets/images/screenshot08.png)
 
 You may also update an existing employee's role or manager by selecting "Update":
 
 ![Screenshot](assets/images/screenshot09.png)
-
 ![Screenshot](assets/images/screenshot10.png)
-
-![Screenshot](assets/images/screenshot11.png)
 
 ## Walkthrough Video
 
