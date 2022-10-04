@@ -28,38 +28,22 @@ function mainMenu () {
                 name: "choice",
                 choices: 
                     [
-                        "View All Departments",
-                        "View All Roles",
-                        "View All Employees",
-                        "Add Department",
-                        "Add Role",
-                        "Add Employee",
-                        "Update Employee Role",
+                        "View",
+                        "Add",
+                        "Update",
                         "Quit"
                     ]
             }
         ]).then(data => {
             switch(data.choice) {
-                case "View All Departments":
-                    viewDepts();
+                case "View":
+                    viewPrompt();
                     break;
-                case "View All Roles":
-                    viewRoles();
+                case "Add":
+                    addPrompt();
                     break;
-                case "View All Employees":
-                    viewEmployees();
-                    break;
-                case "Add Department":
-                    addDept();
-                    break;
-                case "Add Role":
-                    addRole();
-                    break;
-                case "Add Employee":
-                    addEmployee();
-                    break;
-                case "Update Employee Role":
-                    updateRole();
+                case "Update":
+                    updateEmp();
                     break;
                 case "Quit":
                     closeApp();
@@ -69,6 +53,66 @@ function mainMenu () {
                     break;
             }
         })
+}
+
+function viewPrompt() {
+    inquirer.prompt ([
+        {
+            type: "list",
+            message: "What would you like to view?",
+            name: "view",
+            choices: [
+                "All Departments",
+                "All Roles",
+                "All Employees",
+            ]
+        }
+    ]).then(response => {
+        switch(response.view) {
+            case "All Departments":
+                viewDepts();
+                break;
+            case "All Roles":
+                viewRoles();
+                break;
+            case "All Employees":
+                viewEmps();
+                break;
+            default:
+                closeApp();
+                break;
+        }
+    })
+}
+
+function addPrompt() {
+    inquirer.prompt ([
+        {
+            type: "list",
+            message: "What would you like to add?",
+            name: "add",
+            choices: [
+                "Department",
+                "Role",
+                "Employee"
+            ]
+        }
+    ]).then(response => {
+        switch(response.add) {
+            case "Department":
+                addDept();
+                break;
+            case "Role":
+                addRole();
+                break;
+            case "Employee":
+                addEmployee();
+                break;
+            default:
+                closeApp();
+                break;
+        }
+    })
 }
 
 function viewDepts() {
@@ -92,7 +136,7 @@ function viewRoles() {
     });
 }
 
-function viewEmployees() {
+function viewEmps() {
     inquirer.prompt ([
         {
             type: "list",
@@ -100,20 +144,20 @@ function viewEmployees() {
             name: "empView",
             choices: 
                 [
-                    "View All Employees Individually",
-                    "View All Employees by Manager",
-                    "View All Employees by Department",
+                    "Individually",
+                    "By Manager",
+                    "By Department",
                 ]
         }
     ]).then(data => {
         switch(data.empView) {
-            case "View All Employees Individually":
-                viewIndEmp();
+            case "Individually":
+                viewInd();
                 break;
-            case "View All Employees by Manager":
+            case "By Manager":
                 viewByMgr();
                 break;
-            case "View All Employees by Department":
+            case "By Department":
                 viewByDept();
                 break;
             default:
@@ -124,7 +168,7 @@ function viewEmployees() {
     
 }
 
-function viewIndEmp() {
+function viewInd() {
     db.query(`
     SELECT 
         e.id, e.first_name, 
@@ -328,6 +372,33 @@ function addEmployee() {
     })
 }
 
+function updateEmp() {
+    inquirer.prompt ([
+        {
+            type: "list",
+            message: "What would you like to update?",
+            name: "update",
+            choices: 
+                [
+                    "Update Employee's Role",
+                    "Update Employee's Manager",
+                ]
+        }
+    ]).then(data => {
+        switch(data.update) {
+            case "Update Employee's Role":
+                updateRole();
+                break;
+            case "Update Employee's Manager":
+                updateMgr();
+                break;
+            default:
+                closeApp();
+                break;
+        }
+    })
+}
+
 function updateRole() {
     db.query('SELECT * FROM role ORDER BY id', (err, roleData) => {
         let roles = [];
@@ -381,6 +452,59 @@ function updateRole() {
                         }
                 })
             })
+        })
+    })
+}
+
+function updateMgr() {
+    db.query(`SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY id`, (err, empData) => {
+        // console.log(data);
+        let employees = [];
+        for (let i in empData) {
+            employees.push(empData[i].name);
+        }
+        // console.log(employees);
+
+        inquirer.prompt ([
+            {
+                type: "list",
+                message: "Which employee would you like to update the manager for?",
+                name: "emp",
+                choices: employees
+            },
+            {
+                type: "list",
+                message: "Who is the employee's new manager?",
+                name: "mgr",
+                choices: employees
+            },
+        ]).then(data => {
+            if (data.emp == data.mgr) {
+                console.log("You may not assign an employee as their own manager.")
+                updateEmp();
+            } else {
+                let empId;
+                for (let i in empData) {
+                    if (empData[i].name == data.emp) empId = empData[i].id;
+                }
+                let mgrId;
+                for (let i in empData) {
+                    if (empData[i].name == data.mgr) mgrId = empData[i].id;
+                }
+    
+                db.query(`
+                    UPDATE employee
+                    SET manager_id = ${mgrId}
+                    WHERE id = ${empId};`, (err, results) => {
+                        if (err) {
+                            console.error(err);
+                            mainMenu();
+                        } else {
+                        console.log(`Updated ${data.emp}'s manager.`);
+                        mainMenu();
+                        }
+                })    
+            }
         })
     })
 }
