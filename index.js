@@ -226,7 +226,7 @@ function addEmployee() {
                 for (let i in roleData) {
                     if (roleData[i].title == data.title) roleId = roleData[i].id;
                 }
-                console.log(roleId);
+                // console.log(roleId);
                 let mgrId;
                 if (data.mgr != "None") {
                     for (let i in empData) {
@@ -251,7 +251,60 @@ function addEmployee() {
 }
 
 function updateRole() {
-    return;
+    db.query('SELECT * FROM role ORDER BY id', (err, roleData) => {
+        let roles = [];
+        for (let i in roleData) {
+            roles.push(roleData[i].title);
+        }
+        // console.log(roles);
+
+        db.query(`SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY id`, (err, empData) => {
+            // console.log(data);
+            let employees = [];
+            for (let i in empData) {
+                employees.push(empData[i].name);
+            }
+            // console.log(employees);
+
+            inquirer.prompt ([
+                {
+                    type: "list",
+                    message: "Which employee would you like to update the role for?",
+                    name: "emp",
+                    choices: employees
+                },
+                {
+                    type: "list",
+                    message: "Which role would you like to assign to the selected employee?",
+                    name: "title",
+                    choices: roles
+                },
+            ]).then(data => {
+                let roleId;
+                for (let i in roleData) {
+                    if (roleData[i].title == data.title) roleId = roleData[i].id;
+                }
+                // console.log(roleId);
+                let empId;
+                for (let i in empData) {
+                    if (empData[i].name == data.emp) empId = empData[i].id;
+                }
+
+                db.query(`
+                    UPDATE employee
+                    SET role_id = ${roleId}
+                    WHERE id = ${empId};`, (err, results) => {
+                        if (err) {
+                            console.error(err);
+                            mainMenu();
+                        } else {
+                        console.log(`Updated ${data.emp}'s role.`);
+                        mainMenu();
+                        }
+                })
+            })
+        })
+    })
 }
 
 init(); 
