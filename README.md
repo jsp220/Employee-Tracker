@@ -46,8 +46,6 @@ You may also update an existing employee's role or manager by selecting "Update"
 
 ![Screenshot](assets/images/screenshot10.png)
 
-![Screenshot](assets/images/screenshot11.png)
-
 ## Walkthrough Video
 
 [Walkthrough Video](https://www.youtube.com/watch?v=)
