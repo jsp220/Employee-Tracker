@@ -16,7 +16,7 @@ npm install
 
 Then, use mySQL to run query.sql to create and seed the database:
 
-![Screenshot](assets/images/screenshot00.png)
+![Screenshot](assets/images/screenshot0.png)
 
 Then, enter the following command to run the application:
 
@@ -46,7 +46,7 @@ You may also update an existing employee's role or manager by selecting "Update"
 
 ## Walkthrough Video
 
-<!-- [Walkthrough Video](https://www.youtube.com/watch?v=) -->
+[Walkthrough Video](https://www.youtube.com/watch?v=I21KDQjpPfA)
 
 ## License
 
