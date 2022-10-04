@@ -1,7 +1,9 @@
 SOURCE schema.sql;
 SOURCE seeds.sql;
 
--- SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name, role.salary, employee.
+SELECT * FROM department;
+SELECT * FROM role;
+SELECT * FROM employee;
 
 SELECT e.id, e.first_name, e.last_name, r.title, m.first_name AS manager_first_name, m.last_name AS manager_last_name
 FROM employee AS e
@@ -10,4 +12,10 @@ FROM employee AS e
     ON e.manager_id = m.id
     JOIN 
     role AS r
-    ON e.role_id = r.id
+    ON e.role_id = r.id;
+
+SELECT r.id, r.title, d.name AS department, r.salary
+FROM role AS r
+    JOIN
+    department AS d
+    ON r.department_id = d.id
