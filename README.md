@@ -14,6 +14,10 @@ Clone this repo into a local folder. Enter the following node command into Termi
 npm install
 ```
 
+Then, use mySQL to run query.sql to create and seed the database:
+
+![Screenshot](assets/images/screenshot00.png)
+
 Then, enter the following command to run the application:
 
 ```shell
@@ -42,7 +46,7 @@ You may also update an existing employee's role or manager by selecting "Update"
 
 ## Walkthrough Video
 
-[Walkthrough Video](https://www.youtube.com/watch?v=)
+<!-- [Walkthrough Video](https://www.youtube.com/watch?v=) -->
 
 ## License
 
