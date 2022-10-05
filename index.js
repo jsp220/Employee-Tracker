@@ -1,7 +1,10 @@
+// Import necessary packages
+
 const inquirer = require("inquirer");
 const mysql = require('mysql2');
 const cTable = require('console.table');
 
+// Connect to company_db database
 const db = mysql.createConnection(
     {
         host: 'localhost',
@@ -12,6 +15,7 @@ const db = mysql.createConnection(
     // console.log("Connected to the company_db database.")
 );
 
+// Initial function to start the app
 function init() {
     console.clear();
     console.log(`\x1b[36m### Employee Tracker and Manager ###\x1b[0m\n`)
@@ -19,6 +23,7 @@ function init() {
     mainMenu();
 }
 
+// Main Menu prompts user what they want to do
 function mainMenu () {
     inquirer
         .prompt ([
@@ -35,7 +40,7 @@ function mainMenu () {
                     ]
             }
         ]).then(data => {
-            switch(data.choice) {
+            switch(data.choice) { // Switch statement based on user selection
                 case "View":
                     viewPrompt();
                     break;
@@ -55,6 +60,7 @@ function mainMenu () {
         })
 }
 
+// Prompt user what they want to view
 function viewPrompt() {
     inquirer.prompt ([
         {
@@ -68,7 +74,7 @@ function viewPrompt() {
             ]
         }
     ]).then(response => {
-        switch(response.view) {
+        switch(response.view) { // Switch statement based on user input
             case "All Departments":
                 viewDepts();
                 break;
@@ -85,6 +91,7 @@ function viewPrompt() {
     })
 }
 
+// Prompt user what they want to add
 function addPrompt() {
     inquirer.prompt ([
         {
@@ -98,7 +105,7 @@ function addPrompt() {
             ]
         }
     ]).then(response => {
-        switch(response.add) {
+        switch(response.add) { // Switch statement based on user input
             case "Department":
                 addDept();
                 break;
@@ -115,13 +122,15 @@ function addPrompt() {
     })
 }
 
+// Query the database to view all departments
 function viewDepts() {
     db.query('SELECT * FROM department ORDER BY id', (err, results) => {
-        console.table(results);
+        console.table(results); // use console.table to tabulate the results
         mainMenu();
     });        
 }
 
+// Query the database to view all roles
 function viewRoles() {
     db.query(`
         SELECT r.id, r.title, d.name AS department, r.salary
@@ -131,11 +140,12 @@ function viewRoles() {
             ON r.department_id = d.id
             ORDER BY r.id`, 
         (err, results) => {
-            console.table(results);
+            console.table(results); // console.table to tabulate
             mainMenu();
     });
 }
 
+// Prompts user how they'd like to sort the employees
 function viewEmps() {
     inquirer.prompt ([
         {
@@ -168,6 +178,7 @@ function viewEmps() {
     
 }
 
+// View all employees in order of employee ID
 function viewInd() {
     db.query(`
     SELECT 
@@ -192,6 +203,7 @@ function viewInd() {
     });
 }
 
+// View all employees sorted by manager
 function viewByMgr() {
     db.query(`
     SELECT 
@@ -215,6 +227,7 @@ function viewByMgr() {
     });
 }
 
+// View employees sorted by department
 function viewByDept() {
     db.query(`
     SELECT 
@@ -238,6 +251,7 @@ function viewByDept() {
     });
 }
 
+// Add department 
 function addDept() {
     inquirer.prompt ([
         {
@@ -246,6 +260,7 @@ function addDept() {
             name: "dept"
         }
     ]).then(data => {
+        // Add to database
         db.query(`INSERT INTO department (name) VALUES ("${data.dept}")`, (err, results) => {
             if (err) {
                 console.error(err);
@@ -258,13 +273,15 @@ function addDept() {
     })
 }
 
+// Add new role
 function addRole() {  
+    // retrieve department data
     db.query('SELECT * FROM department ORDER BY id', (err, results) => {
+        // create an array of department names to prompt user
         let depts = [];
         for (let i in results) {
             depts.push(results[i].name);
         }
-        // console.log(results);
         inquirer.prompt ([
             {
                 type: "input",
@@ -283,11 +300,12 @@ function addRole() {
                 choices: depts
             }
         ]).then(data => {
+            // iterate through the department data array to find the ID of the department the role is being added to
             let id;
             for (let i in results) {
                 if (results[i].name == data.dept) id = results[i].id;
             }
-            // console.log(id);
+            // Use the id to insert into role table
             db.query(`
                 INSERT INTO role (title, salary, department_id)
                 VALUES ("${data.title}", ${data.salary}, ${id});`, (err, results) => {
@@ -304,22 +322,23 @@ function addRole() {
     })
 }
 
+// Add new employee
 function addEmployee() {
+    // retrieve role data
     db.query('SELECT * FROM role ORDER BY id', (err, roleData) => {
+        // create an array of role titles
         let roles = [];
         for (let i in roleData) {
             roles.push(roleData[i].title);
         }
-        // console.log(roles);
 
+        // retrieve employee data
         db.query(`SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY id`, (err, empData) => {
-            // console.log(data);
+            // create an array of employees to choose from for the manager            
             let employees = [];
             for (let i in empData) {
                 employees.push(empData[i].name);
             }
-            // console.log(employees);
-
             inquirer.prompt ([
                 {
                     type: "input",
@@ -344,11 +363,12 @@ function addEmployee() {
                     choices: ["None", ...employees ]
                 },
             ]).then(data => {
+                // find corresponding role ID
                 let roleId;
                 for (let i in roleData) {
                     if (roleData[i].title == data.title) roleId = roleData[i].id;
                 }
-                // console.log(roleId);
+                // find employee ID of manager
                 let mgrId;
                 if (data.mgr != "None") {
                     for (let i in empData) {
@@ -356,6 +376,7 @@ function addEmployee() {
                     }
                 } else mgrId = null;
 
+                // Add to database
                 db.query(`
                     INSERT INTO employee (first_name, last_name, role_id, manager_id)
                     VALUES ("${data.firstName}", "${data.lastName}", ${roleId}, ${mgrId});`, (err, results) => {
@@ -372,6 +393,7 @@ function addEmployee() {
     })
 }
 
+// Prompt user if they want to update role or manager
 function updateEmp() {
     inquirer.prompt ([
         {
@@ -399,21 +421,21 @@ function updateEmp() {
     })
 }
 
+// Update role of an existing employee
 function updateRole() {
     db.query('SELECT * FROM role ORDER BY id', (err, roleData) => {
+        // array of role titles
         let roles = [];
         for (let i in roleData) {
             roles.push(roleData[i].title);
         }
-        // console.log(roles);
 
         db.query(`SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY id`, (err, empData) => {
-            // console.log(data);
+            // array of employees
             let employees = [];
             for (let i in empData) {
                 employees.push(empData[i].name);
             }
-            // console.log(employees);
 
             inquirer.prompt ([
                 {
@@ -429,16 +451,18 @@ function updateRole() {
                     choices: roles
                 },
             ]).then(data => {
+                // find role ID for the new role
                 let roleId;
                 for (let i in roleData) {
                     if (roleData[i].title == data.title) roleId = roleData[i].id;
                 }
-                // console.log(roleId);
+                // find employee ID
                 let empId;
                 for (let i in empData) {
                     if (empData[i].name == data.emp) empId = empData[i].id;
                 }
 
+                // Update database
                 db.query(`
                     UPDATE employee
                     SET role_id = ${roleId}
@@ -456,14 +480,14 @@ function updateRole() {
     })
 }
 
+// Update manager
 function updateMgr() {
     db.query(`SELECT id, CONCAT(first_name, ' ', last_name) AS name FROM employee ORDER BY id`, (err, empData) => {
-        // console.log(data);
+        // array of employees
         let employees = [];
         for (let i in empData) {
             employees.push(empData[i].name);
         }
-        // console.log(employees);
 
         inquirer.prompt ([
             {
@@ -483,15 +507,18 @@ function updateMgr() {
                 console.log("You may not assign an employee as their own manager.")
                 updateEmp();
             } else {
+                // find ID of employee
                 let empId;
                 for (let i in empData) {
                     if (empData[i].name == data.emp) empId = empData[i].id;
                 }
+                // find ID of new manager
                 let mgrId;
                 for (let i in empData) {
                     if (empData[i].name == data.mgr) mgrId = empData[i].id;
                 }
     
+                // Update database
                 db.query(`
                     UPDATE employee
                     SET manager_id = ${mgrId}
