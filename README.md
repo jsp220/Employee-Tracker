@@ -16,7 +16,7 @@ npm install
 
 Then, use mySQL to run query.sql to create and seed the database:
 
-![Screenshot](assets/images/screenshot0.png)
+![Screenshot](assets/images/screenshot00.png)
 
 Then, enter the following command to run the application:
 
